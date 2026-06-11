@@ -1,6 +1,7 @@
 using Humanizer;
 using LibHac.Ns;
 using Ryujinx.Ava;
+using Ryujinx.Ava.Systems.Configuration;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
@@ -70,6 +71,8 @@ namespace Ryujinx.Headless
         protected SDL3MouseDriver MouseDriver;
         private readonly InputManager _inputManager;
         private readonly IKeyboard _keyboardInterface;
+        private readonly HotkeyManager _hotkeyManager;
+        private HotkeyState _prevHotkeyState;
         protected readonly GraphicsDebugLevel GlLogLevel;
         private readonly Stopwatch _chrono;
         private readonly long _ticksPerFrame;
@@ -102,6 +105,7 @@ namespace Ryujinx.Headless
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
+            _hotkeyManager = _inputManager.CreateHotkeyManager();
             GlLogLevel = glLogLevel;
             _chrono = new Stopwatch();
             _ticksPerFrame = Stopwatch.Frequency / TargetFps;
@@ -131,6 +135,9 @@ namespace Ryujinx.Headless
 
             NpadManager.Initialize(device, inputConfigs, enableKeyboard, enableMouse);
             TouchScreenManager.Initialize(device);
+            _hotkeyManager.Initialize(
+                ConfigurationState.Instance.Hid.Hotkeys,
+                ConfigurationState.Instance.Hid.GamepadHotkeys);
         }
 
         private void SetWindowIcon()
@@ -406,6 +413,20 @@ namespace Ryujinx.Headless
             {
                 return false;
             }
+
+            HotkeyState currentHotkeyState = _hotkeyManager.GetCurrentHotkeyState();
+
+            if (currentHotkeyState != _prevHotkeyState)
+            {
+                if (currentHotkeyState == HotkeyState.StopEmulation)
+                {
+                    _isActive = false;
+
+                    return false;
+                }
+            }
+
+            _prevHotkeyState = currentHotkeyState;
 
             NpadManager.Update();
 

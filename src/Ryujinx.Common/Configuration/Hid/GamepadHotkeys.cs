@@ -36,5 +36,6 @@ namespace Ryujinx.Common.Configuration.Hid
         public GamepadHotkeyCombination CustomVSyncIntervalIncrement { get; set; } = new();
         public GamepadHotkeyCombination CustomVSyncIntervalDecrement { get; set; } = new();
         public GamepadHotkeyCombination TurboMode { get; set; } = new();
+        public GamepadHotkeyCombination StopEmulation { get; set; } = new();
     }
 }

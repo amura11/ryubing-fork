@@ -24,6 +24,7 @@ namespace Ryujinx.Input.HLE
         CustomVSyncIntervalIncrement,
         CustomVSyncIntervalDecrement,
         TurboMode,
+        StopEmulation,
     }
 
     /// <summary>
@@ -116,6 +117,7 @@ namespace Ryujinx.Input.HLE
                 _ when _keyboard.IsPressed((Key)hotkeys.CustomVSyncIntervalIncrement) => HotkeyState.CustomVSyncIntervalIncrement,
                 _ when _keyboard.IsPressed((Key)hotkeys.CustomVSyncIntervalDecrement) => HotkeyState.CustomVSyncIntervalDecrement,
                 _ when _keyboard.IsPressed((Key)hotkeys.TurboMode) => HotkeyState.TurboMode,
+                _ when _keyboard.IsPressed((Key)hotkeys.StopEmulation) => HotkeyState.StopEmulation,
                 _ => HotkeyState.None,
             };
         }
@@ -138,6 +140,7 @@ namespace Ryujinx.Input.HLE
                 _ when IsGamepadHotkeyActive(hotkeys.CustomVSyncIntervalIncrement) => HotkeyState.CustomVSyncIntervalIncrement,
                 _ when IsGamepadHotkeyActive(hotkeys.CustomVSyncIntervalDecrement) => HotkeyState.CustomVSyncIntervalDecrement,
                 _ when IsGamepadHotkeyActive(hotkeys.TurboMode) => HotkeyState.TurboMode,
+                _ when IsGamepadHotkeyActive(hotkeys.StopEmulation) => HotkeyState.StopEmulation,
                 _ => HotkeyState.None,
             };
         }

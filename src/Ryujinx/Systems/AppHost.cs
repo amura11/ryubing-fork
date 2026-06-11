@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Threading;
 using DiscordRPC;
+using Gommon;
 using LibHac.Common;
 using LibHac.Ns;
 using Ryujinx.Audio.Backends.Apple;
@@ -1427,6 +1428,9 @@ namespace Ryujinx.Ava.Systems
                             Device.SetVolume(_newVolume);
 
                             _viewModel.Volume = Device.GetVolume();
+                            break;
+                        case HotkeyState.StopEmulation:
+                            Dispatcher.UIThread.Post(() => ShowExitPrompt().OrCompleted());
                             break;
                         case HotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();

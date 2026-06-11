@@ -15,5 +15,6 @@ namespace Ryujinx.Common.Configuration.Hid
         public Key CustomVSyncIntervalDecrement { get; set; }
         public Key TurboMode { get; set; }
         public bool TurboModeWhileHeld { get; set; }
+        public Key StopEmulation { get; set; }
     }
 }

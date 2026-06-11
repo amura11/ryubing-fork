@@ -45,6 +45,9 @@ namespace Ryujinx.Ava.UI.Models.Input
         [ObservableProperty]
         public partial bool TurboModeWhileHeld { get; set; }
 
+        [ObservableProperty]
+        public partial Key StopEmulation { get; set; }
+
         public HotkeyConfig(KeyboardHotkeys config)
         {
             if (config == null)
@@ -63,6 +66,7 @@ namespace Ryujinx.Ava.UI.Models.Input
             CustomVSyncIntervalDecrement = config.CustomVSyncIntervalDecrement;
             TurboMode = config.TurboMode;
             TurboModeWhileHeld = config.TurboModeWhileHeld;
+            StopEmulation = config.StopEmulation;
         }
 
         public KeyboardHotkeys GetConfig() =>
@@ -80,7 +84,8 @@ namespace Ryujinx.Ava.UI.Models.Input
                 CustomVSyncIntervalIncrement = CustomVSyncIntervalIncrement,
                 CustomVSyncIntervalDecrement = CustomVSyncIntervalDecrement,
                 TurboMode = TurboMode,
-                TurboModeWhileHeld = TurboModeWhileHeld
+                TurboModeWhileHeld = TurboModeWhileHeld,
+                StopEmulation = StopEmulation,
             };
     }
 }
