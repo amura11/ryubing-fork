@@ -1,7 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.Configuration.Hid.Controller;
 using System;
+using System.Linq;
 
 namespace Ryujinx.Input.HLE
 {
@@ -149,7 +149,7 @@ namespace Ryujinx.Input.HLE
         /// Checks whether a gamepad hotkey combination is currently active on any connected gamepad.
         /// All buttons in the combination must be pressed simultaneously on the same gamepad.
         /// </summary>
-        private bool IsGamepadHotkeyActive(GamepadHotkeyCombination combo)
+        private bool IsGamepadHotkeyActive(GamepadCombination combo)
         {
             if (combo == null || combo.IsUnbound)
             {
@@ -176,17 +176,9 @@ namespace Ryujinx.Input.HLE
             return false;
         }
 
-        private static bool IsComboPressed(IGamepad gamepad, GamepadHotkeyCombination combo)
+        private static bool IsComboPressed(IGamepad gamepad, GamepadCombination combo)
         {
-            foreach (GamepadInputId button in combo.Buttons)
-            {
-                if (!gamepad.IsPressed((GamepadButtonInputId)button))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return combo.Buttons.All(button => gamepad.IsPressed((GamepadButtonInputId)button));
         }
     }
 }

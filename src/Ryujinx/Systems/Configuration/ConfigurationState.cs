@@ -283,7 +283,7 @@ namespace Ryujinx.Ava.Systems.Configuration
             };
             Hid.GamepadHotkeys.Value = new GamepadHotkeys
             {
-                ShowUI = new GamepadHotkeyCombination { Buttons = [GamepadInputId.Guide] },
+                ShowUI = new GamepadCombination { Buttons = [GamepadInputId.Guide] },
             };
             Hid.RainbowSpeed.Value = 1f;
             Hid.InputConfig.Value =

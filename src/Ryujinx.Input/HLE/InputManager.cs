@@ -9,6 +9,12 @@ namespace Ryujinx.Input.HLE
         public IGamepadDriver GamepadDriver { get; } = gamepadDriver;
         public IGamepadDriver MouseDriver { get; private set; }
 
+        /// <summary>
+        /// Shared gamepad state snapshot manager. Polls all connected gamepads once per
+        /// frame and provides cheap button/combo queries with edge detection.
+        /// </summary>
+        public GamepadStateManager GamepadState { get; } = new(gamepadDriver);
+
         public void SetMouseDriver(IGamepadDriver mouseDriver)
         {
             MouseDriver?.Dispose();

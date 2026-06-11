@@ -1353,6 +1353,8 @@ namespace Ryujinx.Ava.Systems
                     }
                 });
 
+                _inputManager.GamepadState.Update();
+
                 HotkeyState currentHotkeyState = _hotkeyManager.GetCurrentHotkeyState();
 
                 if (currentHotkeyState != _prevHotkeyState)
