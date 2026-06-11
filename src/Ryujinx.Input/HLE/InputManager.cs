@@ -21,6 +21,12 @@ namespace Ryujinx.Input.HLE
             return new NpadManager(KeyboardDriver, GamepadDriver, MouseDriver);
         }
 
+        public HotkeyManager CreateHotkeyManager()
+        {
+            IKeyboard keyboard = KeyboardDriver.GetGamepad("0") as IKeyboard;
+            return new HotkeyManager(keyboard, GamepadDriver);
+        }
+
         public TouchScreenManager CreateTouchScreenManager()
         {
             if (MouseDriver == null)

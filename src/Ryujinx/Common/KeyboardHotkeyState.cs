@@ -1,19 +1,6 @@
+using Ryujinx.Input.HLE;
+
 namespace Ryujinx.Ava.Common
 {
-    public enum KeyboardHotkeyState
-    {
-        None,
-        ToggleVSyncMode,
-        Screenshot,
-        ShowUI,
-        Pause,
-        ToggleMute,
-        ResScaleUp,
-        ResScaleDown,
-        VolumeUp,
-        VolumeDown,
-        CustomVSyncIntervalIncrement,
-        CustomVSyncIntervalDecrement,
-        TurboMode,
-    }
+    // Kept as a type alias for backwards compatibility. Use HotkeyState from Ryujinx.Input.HLE directly.
 }

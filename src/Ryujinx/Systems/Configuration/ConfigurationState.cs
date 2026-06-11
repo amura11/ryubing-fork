@@ -2,6 +2,7 @@ using Ryujinx.Ava.Systems.Configuration.System;
 using Ryujinx.Ava.Systems.Configuration.UI;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Graphics.Vulkan;
@@ -142,6 +143,7 @@ namespace Ryujinx.Ava.Systems.Configuration
                 EnableMouse = Hid.EnableMouse,
                 DisableInputWhenOutOfFocus = Hid.DisableInputWhenOutOfFocus,
                 Hotkeys = Hid.Hotkeys,
+                GamepadHotkeys = Hid.GamepadHotkeys,
                 InputConfig = Hid.InputConfig,
                 RainbowSpeed = Hid.RainbowSpeed,
                 GraphicsBackend = Graphics.GraphicsBackend,
@@ -278,6 +280,10 @@ namespace Ryujinx.Ava.Systems.Configuration
                 CustomVSyncIntervalDecrement = Key.Unbound,
                 TurboMode = Key.Unbound,
                 TurboModeWhileHeld = false
+            };
+            Hid.GamepadHotkeys.Value = new GamepadHotkeys
+            {
+                ShowUI = new GamepadHotkeyCombination { Buttons = [GamepadInputId.Guide] },
             };
             Hid.RainbowSpeed.Value = 1f;
             Hid.InputConfig.Value =

@@ -156,6 +156,7 @@ namespace Ryujinx.Ava.Systems.Configuration
             Hid.EnableMouse.Value = cff.EnableMouse;
             Hid.DisableInputWhenOutOfFocus.Value = shouldLoadFromFile ? cff.DisableInputWhenOutOfFocus : Hid.DisableInputWhenOutOfFocus.Value; // Get from global config only
             Hid.Hotkeys.Value = shouldLoadFromFile ? cff.Hotkeys : Hid.Hotkeys.Value; // Get from global config only
+            Hid.GamepadHotkeys.Value = shouldLoadFromFile ? (cff.GamepadHotkeys ?? Hid.GamepadHotkeys.Value) : Hid.GamepadHotkeys.Value; // Get from global config only
             Hid.InputConfig.Value = cff.InputConfig ?? [] ;
             Hid.RainbowSpeed.Value = cff.RainbowSpeed;
 

@@ -507,6 +507,11 @@ namespace Ryujinx.Ava.Systems.Configuration
             public ReactiveObject<KeyboardHotkeys> Hotkeys { get; private set; }
 
             /// <summary>
+            /// Hotkey Gamepad Bindings
+            /// </summary>
+            public ReactiveObject<GamepadHotkeys> GamepadHotkeys { get; private set; }
+
+            /// <summary>
             /// Input device configuration.
             /// NOTE: This ReactiveObject won't issue an event when the List has elements added or removed.
             /// TODO: Implement a ReactiveList class.
@@ -524,6 +529,7 @@ namespace Ryujinx.Ava.Systems.Configuration
                 EnableMouse = new ReactiveObject<bool>();
                 DisableInputWhenOutOfFocus = new ReactiveObject<bool>();
                 Hotkeys = new ReactiveObject<KeyboardHotkeys>();
+                GamepadHotkeys = new ReactiveObject<GamepadHotkeys>();
                 InputConfig = new ReactiveObject<List<InputConfig>>();
                 RainbowSpeed = new ReactiveObject<float>();
                 RainbowSpeed.Event += (_, args) => Rainbow.Speed = args.NewValue;

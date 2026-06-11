@@ -422,6 +422,11 @@ namespace Ryujinx.Ava.Systems.Configuration
         public KeyboardHotkeys Hotkeys { get; set; }
 
         /// <summary>
+        /// Hotkey Gamepad Bindings
+        /// </summary>
+        public GamepadHotkeys GamepadHotkeys { get; set; }
+
+        /// <summary>
         /// Input configurations
         /// </summary>
         public List<InputConfig> InputConfig { get; set; }

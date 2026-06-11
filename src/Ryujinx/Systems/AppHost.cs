@@ -12,7 +12,6 @@ using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL3;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Audio.Integration;
-using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Systems.AppLibrary;
@@ -86,11 +85,12 @@ namespace Ryujinx.Ava.Systems
         private readonly MainWindowViewModel _viewModel;
         private readonly IKeyboard _keyboardInterface;
         private readonly TopLevel _topLevel;
+        private readonly HotkeyManager _hotkeyManager;
         public RendererHost RendererHost;
 
         private readonly GraphicsDebugLevel _glLogLevel;
         private float _newVolume;
-        private KeyboardHotkeyState _prevHotkeyState;
+        private HotkeyState _prevHotkeyState;
 
         private long _lastCursorMoveTime;
         private bool _isCursorInRenderer = true;
@@ -165,6 +165,9 @@ namespace Ryujinx.Ava.Systems
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(_topLevel, renderer));
 
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
+
+            _hotkeyManager = _inputManager.CreateHotkeyManager();
+            _hotkeyManager.Initialize(ConfigurationState.Instance.Hid.Hotkeys, ConfigurationState.Instance.Hid.GamepadHotkeys);
 
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
@@ -1349,41 +1352,40 @@ namespace Ryujinx.Ava.Systems
                     }
                 });
 
-                KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
+                HotkeyState currentHotkeyState = _hotkeyManager.GetCurrentHotkeyState();
 
                 if (currentHotkeyState != _prevHotkeyState)
                 {
-                    if (ConfigurationState.Instance.Hid.Hotkeys.Value.TurboModeWhileHeld &&
-                        _keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.TurboMode) != Device.TurboMode)
+                    if (_hotkeyManager.IsTurboHeld() != Device.TurboMode)
                     {
                         Device.ToggleTurbo();
                     }
 
                     switch (currentHotkeyState)
                     {
-                        case KeyboardHotkeyState.ToggleVSyncMode:
+                        case HotkeyState.ToggleVSyncMode:
                             VSyncModeToggle();
                             break;
-                        case KeyboardHotkeyState.CustomVSyncIntervalDecrement:
+                        case HotkeyState.CustomVSyncIntervalDecrement:
                             _viewModel.CustomVSyncInterval = Device.DecrementCustomVSyncInterval();
                             break;
-                        case KeyboardHotkeyState.CustomVSyncIntervalIncrement:
+                        case HotkeyState.CustomVSyncIntervalIncrement:
                             _viewModel.CustomVSyncInterval = Device.IncrementCustomVSyncInterval();
                             break;
-                        case KeyboardHotkeyState.TurboMode:
+                        case HotkeyState.TurboMode:
                             if (!ConfigurationState.Instance.Hid.Hotkeys.Value.TurboModeWhileHeld)
                             {
                                 Device.ToggleTurbo();
                             }
 
                             break;
-                        case KeyboardHotkeyState.Screenshot:
+                        case HotkeyState.Screenshot:
                             ScreenshotRequested = true;
                             break;
-                        case KeyboardHotkeyState.ShowUI:
+                        case HotkeyState.ShowUI:
                             _viewModel.ShowMenuAndStatusBar = !_viewModel.ShowMenuAndStatusBar;
                             break;
-                        case KeyboardHotkeyState.Pause:
+                        case HotkeyState.Pause:
                             if (_viewModel.IsPaused)
                             {
                                 Resume();
@@ -1394,7 +1396,7 @@ namespace Ryujinx.Ava.Systems
                             }
 
                             break;
-                        case KeyboardHotkeyState.ToggleMute:
+                        case HotkeyState.ToggleMute:
                             if (Device.IsAudioMuted())
                             {
                                 Device.SetVolume(_viewModel.VolumeBeforeMute);
@@ -1407,26 +1409,26 @@ namespace Ryujinx.Ava.Systems
 
                             _viewModel.Volume = Device.GetVolume();
                             break;
-                        case KeyboardHotkeyState.ResScaleUp:
+                        case HotkeyState.ResScaleUp:
                             GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
                             break;
-                        case KeyboardHotkeyState.ResScaleDown:
+                        case HotkeyState.ResScaleDown:
                             GraphicsConfig.ResScale =
                             (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
                             break;
-                        case KeyboardHotkeyState.VolumeUp:
+                        case HotkeyState.VolumeUp:
                             _newVolume = MathF.Round((Device.GetVolume() + VolumeDelta), 2);
                             Device.SetVolume(_newVolume);
 
                             _viewModel.Volume = Device.GetVolume();
                             break;
-                        case KeyboardHotkeyState.VolumeDown:
+                        case HotkeyState.VolumeDown:
                             _newVolume = MathF.Round((Device.GetVolume() - VolumeDelta), 2);
                             Device.SetVolume(_newVolume);
 
                             _viewModel.Volume = Device.GetVolume();
                             break;
-                        case KeyboardHotkeyState.None:
+                        case HotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
                             break;
                     }
@@ -1457,62 +1459,6 @@ namespace Ryujinx.Ava.Systems
             Device.Hid.DebugPad.Update();
 
             return true;
-        }
-
-        private KeyboardHotkeyState GetHotkeyState()
-        {
-            KeyboardHotkeyState state = KeyboardHotkeyState.None;
-
-            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVSyncMode))
-            {
-                state = KeyboardHotkeyState.ToggleVSyncMode;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
-            {
-                state = KeyboardHotkeyState.Screenshot;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI))
-            {
-                state = KeyboardHotkeyState.ShowUI;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
-            {
-                state = KeyboardHotkeyState.Pause;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
-            {
-                state = KeyboardHotkeyState.ToggleMute;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
-            {
-                state = KeyboardHotkeyState.ResScaleUp;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
-            {
-                state = KeyboardHotkeyState.ResScaleDown;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeUp))
-            {
-                state = KeyboardHotkeyState.VolumeUp;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.VolumeDown))
-            {
-                state = KeyboardHotkeyState.VolumeDown;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.CustomVSyncIntervalIncrement))
-            {
-                state = KeyboardHotkeyState.CustomVSyncIntervalIncrement;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.CustomVSyncIntervalDecrement))
-            {
-                state = KeyboardHotkeyState.CustomVSyncIntervalDecrement;
-            }
-            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.TurboMode))
-            {
-                state = KeyboardHotkeyState.TurboMode;
-            }
-
-            return state;
         }
     }
 }
