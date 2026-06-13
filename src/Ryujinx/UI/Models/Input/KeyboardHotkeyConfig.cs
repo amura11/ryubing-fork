@@ -4,7 +4,7 @@ using Ryujinx.Common.Configuration.Hid;
 
 namespace Ryujinx.Ava.UI.Models.Input
 {
-    public partial class HotkeyConfig : BaseModel
+    public partial class KeyboardHotkeyConfig : BaseModel
     {
         [ObservableProperty]
         public partial Key ToggleVSyncMode { get; set; }
@@ -48,7 +48,7 @@ namespace Ryujinx.Ava.UI.Models.Input
         [ObservableProperty]
         public partial Key StopEmulation { get; set; }
 
-        public HotkeyConfig(KeyboardHotkeys config)
+        public KeyboardHotkeyConfig(KeyboardHotkeys config)
         {
             if (config == null)
                 return;

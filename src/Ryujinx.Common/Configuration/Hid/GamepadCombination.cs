@@ -7,6 +7,8 @@ namespace Ryujinx.Common.Configuration.Hid
     /// </summary>
     public class GamepadCombination
     {
+        public static GamepadCombination Unbound = new ();
+        
         /// <summary>
         /// The set of buttons that make up this combination. All must be held at once to activate.
         /// </summary>

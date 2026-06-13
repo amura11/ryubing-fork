@@ -385,7 +385,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             get => [.. _networkInterfaces.Keys];
         }
 
-        public HotkeyConfig KeyboardHotkey { get; set; }
+        public KeyboardHotkeyConfig KeyboardHotkey { get; set; }
+        public GamepadHotkeyConfig GamepadHotkey { get; set; }
 
         public int NetworkInterfaceIndex
         {
@@ -660,8 +661,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableMouse = config.Hid.EnableMouse;
             DisableInputWhenOutOfFocus = config.Hid.DisableInputWhenOutOfFocus;
 
-            // Keyboard Hotkeys
-            KeyboardHotkey = new HotkeyConfig(config.Hid.Hotkeys.Value);
+            // Hotkeys
+            KeyboardHotkey = new KeyboardHotkeyConfig(config.Hid.Hotkeys.Value);
+            GamepadHotkey = new GamepadHotkeyConfig(config.Hid.GamepadHotkeys.Value);
 
             // System
             Region = (int)config.System.Region.Value;
@@ -774,8 +776,9 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Hid.EnableMouse.Value = EnableMouse;
             config.Hid.DisableInputWhenOutOfFocus.Value = DisableInputWhenOutOfFocus;
 
-            // Keyboard Hotkeys
+            // Hotkeys
             config.Hid.Hotkeys.Value = KeyboardHotkey.GetConfig();
+            config.Hid.GamepadHotkeys.Value = GamepadHotkey.GetConfig();
 
             // System
             config.System.Region.Value = (Region)Region;

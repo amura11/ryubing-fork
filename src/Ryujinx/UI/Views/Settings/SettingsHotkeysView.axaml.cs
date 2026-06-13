@@ -1,17 +1,17 @@
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Ryujinx.Ava.Input;
 using Ryujinx.Ava.UI.Controls;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
+using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Input;
 using Ryujinx.Input.Assigner;
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using Button = Ryujinx.Input.Button;
 using Key = Ryujinx.Common.Configuration.Hid.Key;
 
@@ -20,19 +20,14 @@ namespace Ryujinx.Ava.UI.Views.Settings
     public partial class SettingsHotkeysView : RyujinxControl<SettingsViewModel>
     {
         private ButtonKeyAssigner _currentAssigner;
+        private ToggleButton _currentGamepadButton;
+        private CancellationTokenSource _gamepadAssignmentSource;
+
         private readonly AvaloniaKeyboardDriver _avaloniaKeyboardDriver;
 
         public SettingsHotkeysView()
         {
             InitializeComponent();
-
-            foreach (ILogical visual in SettingButtons.GetLogicalDescendants())
-            {
-                if (visual is ToggleButton button and not CheckBox)
-                {
-                    button.IsCheckedChanged += Button_IsCheckedChanged;
-                }
-            }
 
             _avaloniaKeyboardDriver = new AvaloniaKeyboardDriver(this, KeyboardInputMode.Semantic);
             _avaloniaKeyboardDriver.KeyPressed += PhysicalKeyLabelHelper.ObserveKeyPress;
@@ -55,7 +50,7 @@ namespace Ryujinx.Ava.UI.Views.Settings
 
             if (shouldRemoveBinding)
             {
-                DeleteBind();
+                SetKeyboardHotkey(_currentAssigner.ToggledButton.Name, Key.Unbound);
             }
 
             _currentAssigner?.Cancel(shouldUnbind);
@@ -63,128 +58,223 @@ namespace Ryujinx.Ava.UI.Views.Settings
             PointerPressed -= MouseClick;
         }
 
-        private void DeleteBind()
+        private void KeyboardButton_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (DataContext is not SettingsViewModel viewModel)
-                return;
-
-            if (_currentAssigner != null)
+            if (sender is not ToggleButton button)
             {
-                Dictionary<string, Action> buttonActions = new()
-                {
-                    { "ToggleVSyncMode", () => viewModel.KeyboardHotkey.ToggleVSyncMode = Key.Unbound },
-                    { "Screenshot", () => viewModel.KeyboardHotkey.Screenshot = Key.Unbound },
-                    { "ShowUI", () => viewModel.KeyboardHotkey.ShowUI = Key.Unbound },
-                    { "Pause", () => viewModel.KeyboardHotkey.Pause = Key.Unbound },
-                    { "ToggleMute", () => viewModel.KeyboardHotkey.ToggleMute = Key.Unbound },
-                    { "ResScaleUp", () => viewModel.KeyboardHotkey.ResScaleUp = Key.Unbound },
-                    { "ResScaleDown", () => viewModel.KeyboardHotkey.ResScaleDown = Key.Unbound },
-                    { "VolumeUp", () => viewModel.KeyboardHotkey.VolumeUp = Key.Unbound },
-                    { "VolumeDown", () => viewModel.KeyboardHotkey.VolumeDown = Key.Unbound },
-                    { "CustomVSyncIntervalIncrement", () => viewModel.KeyboardHotkey.CustomVSyncIntervalIncrement = Key.Unbound },
-                    { "CustomVSyncIntervalDecrement", () => viewModel.KeyboardHotkey.CustomVSyncIntervalDecrement = Key.Unbound },
-                    { "TurboMode", () => viewModel.KeyboardHotkey.TurboMode = Key.Unbound }
-                };
+                return;
+            }
 
-                if (buttonActions.TryGetValue(_currentAssigner.ToggledButton.Name, out Action action))
+            if ((bool)button.IsChecked)
+            {
+                if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
                 {
-                    action();
+                    return;
+                }
+
+                if (_currentAssigner == null)
+                {
+                    _currentAssigner = new ButtonKeyAssigner(button);
+
+                    this.Focus(NavigationMethod.Pointer);
+
+                    PointerPressed += MouseClick;
+
+                    IKeyboard keyboard = (IKeyboard)_avaloniaKeyboardDriver.GetGamepad("0");
+                    IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
+
+                    _currentAssigner.ButtonAssigned += (_, be) =>
+                    {
+                        if (be.ButtonValue.HasValue)
+                        {
+                            Button buttonValue = be.ButtonValue.Value;
+                            Dispatcher.UIThread.Post(() => SetKeyboardHotkey(button.Name, buttonValue.AsHidType<Key>()));
+                        }
+                    };
+
+                    _currentAssigner.GetInputAndAssign(assigner, keyboard);
+                }
+                else
+                {
+                    _currentAssigner.Cancel();
+                    _currentAssigner = null;
+                    button.IsChecked = false;
+                }
+            }
+            else
+            {
+                _currentAssigner?.Cancel();
+                _currentAssigner = null;
+            }
+        }
+        
+        private void GamepadButton_RightClickUnbind(object sender, PointerPressedEventArgs e)
+        {
+            if (sender is ToggleButton button && e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                if (_currentGamepadButton != null && _currentGamepadButton == button)
+                {
+                    _gamepadAssignmentSource?.Cancel();
+                    _currentGamepadButton.IsChecked = false;
+                    _currentGamepadButton = null;
+                    
+                    SetGamepadHotkey(button.Name, GamepadCombination.Unbound);
                 }
             }
         }
 
-        private void Button_IsCheckedChanged(object sender, RoutedEventArgs e)
+        private async void GamepadButton_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (sender is ToggleButton button)
+            if (sender is not ToggleButton button)
             {
-                if ((bool)button.IsChecked)
+                return;
+            }
+
+            if ((bool)button.IsChecked)
+            {
+                // Cancel any in-progress assignment on a different button
+                if (_currentGamepadButton != null && _currentGamepadButton != button)
                 {
-                    if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
+                    _gamepadAssignmentSource?.Cancel();
+                    _currentGamepadButton.IsChecked = false;
+                    _currentGamepadButton = null;
+                }
+
+                _currentGamepadButton = button;
+                _gamepadAssignmentSource = new CancellationTokenSource();
+
+                IGamepadDriver driver = RyujinxApp.MainWindow.InputManager.GamepadDriver;
+                GamepadComboListener listener = new(driver);
+
+                Button[] result = await listener.ListenAsync(cancellationToken: _gamepadAssignmentSource.Token);
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    // Null before setting IsChecked so the unchecked branch below is a no-op
+                    _currentGamepadButton = null;
+                    button.IsChecked = false;
+
+                    if (result.Length == 0)
                     {
                         return;
                     }
 
-                    if (_currentAssigner == null)
-                    {
-                        _currentAssigner = new ButtonKeyAssigner(button);
-
-                        this.Focus(NavigationMethod.Pointer);
-
-                        PointerPressed += MouseClick;
-
-                        IKeyboard keyboard = (IKeyboard)_avaloniaKeyboardDriver.GetGamepad("0");
-                        IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
-
-                        _currentAssigner.ButtonAssigned += (sender, e) =>
-                        {
-                            if (e.ButtonValue.HasValue)
-                            {
-                                Button buttonValue = e.ButtonValue.Value;
-
-                                Dispatcher.UIThread.Post(() =>
-                                {
-                                    switch (button.Name)
-                                    {
-                                        case "ToggleVSyncMode":
-                                            ViewModel.KeyboardHotkey.ToggleVSyncMode = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "Screenshot":
-                                            ViewModel.KeyboardHotkey.Screenshot = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "ShowUI":
-                                            ViewModel.KeyboardHotkey.ShowUI = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "Pause":
-                                            ViewModel.KeyboardHotkey.Pause = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "ToggleMute":
-                                            ViewModel.KeyboardHotkey.ToggleMute = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "ResScaleUp":
-                                            ViewModel.KeyboardHotkey.ResScaleUp = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "ResScaleDown":
-                                            ViewModel.KeyboardHotkey.ResScaleDown = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "VolumeUp":
-                                            ViewModel.KeyboardHotkey.VolumeUp = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "VolumeDown":
-                                            ViewModel.KeyboardHotkey.VolumeDown = buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "CustomVSyncIntervalIncrement":
-                                            ViewModel.KeyboardHotkey.CustomVSyncIntervalIncrement =
-                                                buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "CustomVSyncIntervalDecrement":
-                                            ViewModel.KeyboardHotkey.CustomVSyncIntervalDecrement =
-                                                buttonValue.AsHidType<Key>();
-                                            break;
-                                        case "TurboMode":
-                                            ViewModel.KeyboardHotkey.TurboMode = buttonValue.AsHidType<Key>();
-                                            break;
-                                    }
-                                });
-                            }
-                        };
-
-                        _currentAssigner.GetInputAndAssign(assigner, keyboard);
-                    }
-                    else
-                    {
-                        if (_currentAssigner != null)
-                        {
-                            _currentAssigner.Cancel();
-                            _currentAssigner = null;
-                            button.IsChecked = false;
-                        }
-                    }
-                }
-                else
+                    GamepadInputId[] buttons = Array.ConvertAll(result, b => b.AsHidType<GamepadInputId>());
+                    GamepadCombination combo = new() { Buttons = buttons };
+                    
+                    SetGamepadHotkey(button.Name, combo);
+                });
+            }
+            else
+            {
+                // User unchecked the button manually — cancel any in-progress assignment
+                if (_currentGamepadButton == button)
                 {
-                    _currentAssigner?.Cancel();
-                    _currentAssigner = null;
+                    _gamepadAssignmentSource?.Cancel();
+                    _currentGamepadButton = null;
                 }
+            }
+        }
+        
+        private void SetKeyboardHotkey(string buttonName, Key value)
+        {
+            if (DataContext is not SettingsViewModel viewModel)
+            {
+                return;
+            }
+
+            switch (buttonName)
+            {
+                case "ToggleVSyncMode":
+                    viewModel.KeyboardHotkey.ToggleVSyncMode = value;
+                    break;
+                case "Screenshot":
+                    viewModel.KeyboardHotkey.Screenshot = value;
+                    break;
+                case "ShowUI":
+                    viewModel.KeyboardHotkey.ShowUI = value;
+                    break;
+                case "Pause":
+                    viewModel.KeyboardHotkey.Pause = value;
+                    break;
+                case "ToggleMute":
+                    viewModel.KeyboardHotkey.ToggleMute = value;
+                    break;
+                case "ResScaleUp":
+                    viewModel.KeyboardHotkey.ResScaleUp = value;
+                    break;
+                case "ResScaleDown":
+                    viewModel.KeyboardHotkey.ResScaleDown = value;
+                    break;
+                case "VolumeUp":
+                    viewModel.KeyboardHotkey.VolumeUp = value;
+                    break;
+                case "VolumeDown":
+                    viewModel.KeyboardHotkey.VolumeDown = value;
+                    break;
+                case "CustomVSyncIntervalIncrement":
+                    viewModel.KeyboardHotkey.CustomVSyncIntervalIncrement = value;
+                    break;
+                case "CustomVSyncIntervalDecrement":
+                    viewModel.KeyboardHotkey.CustomVSyncIntervalDecrement = value;
+                    break;
+                case "TurboMode":
+                    viewModel.KeyboardHotkey.TurboMode = value;
+                    break;
+                case "StopEmulation":
+                    viewModel.KeyboardHotkey.StopEmulation = value;
+                    break;
+            }
+        }
+        
+        private void SetGamepadHotkey(string buttonName, GamepadCombination value)
+        {
+            if (DataContext is not SettingsViewModel viewModel)
+            {
+                return;
+            }
+
+            switch (buttonName)
+            {
+                case "GamepadToggleVSyncMode":
+                    viewModel.GamepadHotkey.ToggleVSyncMode = value;
+                    break;
+                case "GamepadScreenshot":
+                    viewModel.GamepadHotkey.Screenshot = value;
+                    break;
+                case "GamepadShowUI":
+                    viewModel.GamepadHotkey.ShowUI = value;
+                    break;
+                case "GamepadPause":
+                    viewModel.GamepadHotkey.Pause = value;
+                    break;
+                case "GamepadToggleMute":
+                    viewModel.GamepadHotkey.ToggleMute = value;
+                    break;
+                case "GamepadResScaleUp":
+                    viewModel.GamepadHotkey.ResScaleUp = value;
+                    break;
+                case "GamepadResScaleDown":
+                    viewModel.GamepadHotkey.ResScaleDown = value;
+                    break;
+                case "GamepadVolumeUp":
+                    viewModel.GamepadHotkey.VolumeUp = value;
+                    break;
+                case "GamepadVolumeDown":
+                    viewModel.GamepadHotkey.VolumeDown = value;
+                    break;
+                case "GamepadCustomVSyncIntervalIncrement":
+                    viewModel.GamepadHotkey.CustomVSyncIntervalIncrement = value;
+                    break;
+                case "GamepadCustomVSyncIntervalDecrement":
+                    viewModel.GamepadHotkey.CustomVSyncIntervalDecrement = value;
+                    break;
+                case "GamepadTurboMode":
+                    viewModel.GamepadHotkey.TurboMode = value;
+                    break;
+                case "GamepadStopEmulation":
+                    viewModel.GamepadHotkey.StopEmulation = value;
+                    break;
             }
         }
 
@@ -192,6 +282,10 @@ namespace Ryujinx.Ava.UI.Views.Settings
         {
             _currentAssigner?.Cancel();
             _currentAssigner = null;
+
+            _gamepadAssignmentSource?.Cancel();
+            _gamepadAssignmentSource = null;
+            _currentGamepadButton = null;
 
             _avaloniaKeyboardDriver.Dispose();
         }
