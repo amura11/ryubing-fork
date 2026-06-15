@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ext="clr-namespace:Ryujinx.Ava.Common.Markup"
+    xmlns:views="clr-namespace:Ryujinx.Ava.UI.Views.Settings"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.UI.ViewModels"
     xmlns:helpers="clr-namespace:Ryujinx.Ava.UI.Helpers"
     mc:Ignorable="d"
@@ -39,139 +40,140 @@
         <Border Classes="settings">
             <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                 <TextBlock Classes="h1" Text="{ext:Locale SettingsTabHotkeysHotkeys}" />
-                <Grid Name="SettingButtons" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="5">
+                <TextBlock Text="{ext:Locale SettingsTabHotkeysInstructions}" FontStyle="Italic" Opacity="0.7" />
+                <Grid Name="SettingButtons" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="230" />
-                        <ColumnDefinition Width="90" />
-                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <!-- Headers -->
                     <TextBlock Grid.Row="0" Grid.Column="1" Classes="columnHeader" Text="{ext:Locale SettingsTabHotkeysKeyboard}" />
                     <TextBlock Grid.Row="0" Grid.Column="2" Classes="columnHeader" Text="{ext:Locale SettingsTabHotkeysGamepad}" />
+                    <TextBlock Grid.Row="0" Grid.Column="3" Classes="columnHeader" Text="{ext:Locale SettingsTabHotkeysOptions}" />
 
                     <!-- Toggle VSync Mode -->
                     <TextBlock Grid.Row="1" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysToggleVSyncModeHotkey}" />
-                    <ToggleButton Grid.Row="1" Grid.Column="1" Name="ToggleVSyncMode" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="1" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardToggleVSyncMode}">
                         <TextBlock Text="{Binding KeyboardHotkey.ToggleVSyncMode, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="1" Grid.Column="2" Name="GamepadToggleVSyncMode" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="1" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadToggleVSyncMode}">
                         <TextBlock Text="{Binding GamepadHotkey.ToggleVSyncMode, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Screenshot -->
                     <TextBlock Grid.Row="2" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysScreenshotHotkey}" />
-                    <ToggleButton Grid.Row="2" Grid.Column="1" Name="Screenshot" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="2" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardScreenshot}">
                         <TextBlock Text="{Binding KeyboardHotkey.Screenshot, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="2" Grid.Column="2" Name="GamepadScreenshot" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="2" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadScreenshot}">
                         <TextBlock Text="{Binding GamepadHotkey.Screenshot, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Show UI -->
                     <TextBlock Grid.Row="3" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysShowUiHotkey}" />
-                    <ToggleButton Grid.Row="3" Grid.Column="1" Name="ShowUI" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="3" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardShowUI}">
                         <TextBlock Text="{Binding KeyboardHotkey.ShowUI, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="3" Grid.Column="2" Name="GamepadShowUI" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="3" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadShowUI}">
                         <TextBlock Text="{Binding GamepadHotkey.ShowUI, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Pause -->
                     <TextBlock Grid.Row="4" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysPauseHotkey}" />
-                    <ToggleButton Grid.Row="4" Grid.Column="1" Name="Pause" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="4" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardPause}">
                         <TextBlock Text="{Binding KeyboardHotkey.Pause, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="4" Grid.Column="2" Name="GamepadPause" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="4" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadPause}">
                         <TextBlock Text="{Binding GamepadHotkey.Pause, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Toggle Mute -->
                     <TextBlock Grid.Row="5" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysToggleMuteHotkey}" />
-                    <ToggleButton Grid.Row="5" Grid.Column="1" Name="ToggleMute" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="5" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardToggleMute}">
                         <TextBlock Text="{Binding KeyboardHotkey.ToggleMute, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="5" Grid.Column="2" Name="GamepadToggleMute" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="5" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadToggleMute}">
                         <TextBlock Text="{Binding GamepadHotkey.ToggleMute, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Res Scale Up -->
                     <TextBlock Grid.Row="6" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysResScaleUpHotkey}" />
-                    <ToggleButton Grid.Row="6" Grid.Column="1" Name="ResScaleUp" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="6" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardResScaleUp}">
                         <TextBlock Text="{Binding KeyboardHotkey.ResScaleUp, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="6" Grid.Column="2" Name="GamepadResScaleUp" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="6" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadResScaleUp}">
                         <TextBlock Text="{Binding GamepadHotkey.ResScaleUp, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Res Scale Down -->
                     <TextBlock Grid.Row="7" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysResScaleDownHotkey}" />
-                    <ToggleButton Grid.Row="7" Grid.Column="1" Name="ResScaleDown" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="7" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardResScaleDown}">
                         <TextBlock Text="{Binding KeyboardHotkey.ResScaleDown, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="7" Grid.Column="2" Name="GamepadResScaleDown" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="7" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadResScaleDown}">
                         <TextBlock Text="{Binding GamepadHotkey.ResScaleDown, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Volume Up -->
                     <TextBlock Grid.Row="8" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysVolumeUpHotkey}" />
-                    <ToggleButton Grid.Row="8" Grid.Column="1" Name="VolumeUp" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="8" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardVolumeUp}">
                         <TextBlock Text="{Binding KeyboardHotkey.VolumeUp, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="8" Grid.Column="2" Name="GamepadVolumeUp" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="8" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadVolumeUp}">
                         <TextBlock Text="{Binding GamepadHotkey.VolumeUp, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Volume Down -->
                     <TextBlock Grid.Row="9" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysVolumeDownHotkey}" />
-                    <ToggleButton Grid.Row="9" Grid.Column="1" Name="VolumeDown" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="9" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardVolumeDown}">
                         <TextBlock Text="{Binding KeyboardHotkey.VolumeDown, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="9" Grid.Column="2" Name="GamepadVolumeDown" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="9" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadVolumeDown}">
                         <TextBlock Text="{Binding GamepadHotkey.VolumeDown, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Custom VSync Interval Increment -->
                     <TextBlock Grid.Row="10" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysIncrementCustomVSyncIntervalHotkey}" />
-                    <ToggleButton Grid.Row="10" Grid.Column="1" Name="CustomVSyncIntervalIncrement" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="10" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardCustomVSyncIntervalIncrement}">
                         <TextBlock Text="{Binding KeyboardHotkey.CustomVSyncIntervalIncrement, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="10" Grid.Column="2" Name="GamepadCustomVSyncIntervalIncrement" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="10" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadCustomVSyncIntervalIncrement}">
                         <TextBlock Text="{Binding GamepadHotkey.CustomVSyncIntervalIncrement, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Custom VSync Interval Decrement -->
                     <TextBlock Grid.Row="11" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysDecrementCustomVSyncIntervalHotkey}" />
-                    <ToggleButton Grid.Row="11" Grid.Column="1" Name="CustomVSyncIntervalDecrement" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="11" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardCustomVSyncIntervalDecrement}">
                         <TextBlock Text="{Binding KeyboardHotkey.CustomVSyncIntervalDecrement, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="11" Grid.Column="2" Name="GamepadCustomVSyncIntervalDecrement" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="11" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadCustomVSyncIntervalDecrement}">
                         <TextBlock Text="{Binding GamepadHotkey.CustomVSyncIntervalDecrement, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
 
                     <!-- Turbo Mode -->
                     <TextBlock Grid.Row="12" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysTurboMode}" ToolTip.Tip="{ext:Locale SettingsTabHotkeysTurboModeToolTip}" Background="Transparent" />
-                    <ToggleButton Grid.Row="12" Grid.Column="1" Name="TurboMode" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="12" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardTurboMode}">
                         <TextBlock Text="{Binding KeyboardHotkey.TurboMode, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="12" Grid.Column="2" Name="GamepadTurboMode" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="12" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadTurboMode}">
                         <TextBlock Text="{Binding GamepadHotkey.TurboMode, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
+                    <CheckBox Grid.Row="12" Grid.Column="3" VerticalAlignment="Center" IsChecked="{Binding KeyboardHotkey.TurboModeWhileHeld}">
+                        <TextBlock Text="{ext:Locale SettingsTabHotkeysOnlyWhilePressed}" />
+                    </CheckBox>
 
                     <!-- Stop Emulation -->
                     <TextBlock Grid.Row="13" Grid.Column="0" Classes="settingHeader" Text="{ext:Locale SettingsTabHotkeysStopEmulation}" />
-                    <ToggleButton Grid.Row="13" Grid.Column="1" Name="StopEmulation" IsCheckedChanged="KeyboardButton_IsCheckedChanged">
+                    <ToggleButton Grid.Row="13" Grid.Column="1" Tag="{x:Static views:HotkeyNames.KeyboardStopEmulation}">
                         <TextBlock Text="{Binding KeyboardHotkey.StopEmulation, Converter={x:Static helpers:KeyValueConverter.Instance}}" />
                     </ToggleButton>
-                    <ToggleButton Grid.Row="13" Grid.Column="2" Name="GamepadStopEmulation" IsCheckedChanged="GamepadButton_IsCheckedChanged" PointerPressed="GamepadButton_RightClickUnbind">
+                    <ToggleButton Grid.Row="13" Grid.Column="2" Tag="{x:Static views:HotkeyNames.GamepadStopEmulation}">
                         <TextBlock Text="{Binding GamepadHotkey.StopEmulation, Converter={x:Static helpers:GamepadCombinationConverter.Instance}}" />
                     </ToggleButton>
                 </Grid>
-
-                <!-- Turbo mode option lives below the grid since it spans beyond the button columns -->
-                <CheckBox IsChecked="{Binding KeyboardHotkey.TurboModeWhileHeld}">
-                    <TextBlock Text="{ext:Locale SettingsTabHotkeysOnlyWhilePressed}" />
-                </CheckBox>
             </StackPanel>
         </Border>
     </ScrollViewer>
